@@ -1,0 +1,4 @@
+openstack_public_network: public
+vms_image: "RHEL 8.7" 
+adminhost_flavor: "Medium 50G"
+ceph_flavor: "OKD-Compute"

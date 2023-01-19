@@ -1,0 +1,27 @@
+- name: provision a CEPH cluster
+  hosts: localhost
+  vars_files:
+    - vars/terraform.yml
+    - secrets/auth.yml
+  tasks:
+    - name: provision CEPH nodes with terraform
+      community.general.terraform:
+        project_path: "./terraform"
+        state: "{{ state }}"
+        force_init: true
+        variables:
+          auth_url: "{{ auth_url }}"
+          user_name: "{{ user_name }}"
+          password: "{{ password }}"
+          tenant_name: "{{ tenant_name }}"
+          user_domain_name: "{{ user_domain_name }}"
+          project_domain_name: "{{ project_domain_name }}"
+          openstack_public_network: "{{ openstack_public_network }}"
+          vms_image: "{{ vms_image }}" 
+          adminhost_flavor: "{{ adminhost_flavor }}"
+          ceph_flavor: "{{ ceph_flavor }}"
+      register: terraform
+    - name: create ceph inventory file
+      template:
+        src: "templates/inventory.j2"
+        dest: "{{ playbook_dir }}/inventory"  

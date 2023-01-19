@@ -1,0 +1,14 @@
+[admin-host]
+host00 ansible_host={{ terraform.outputs.admin_host.value }}
+
+[ceph-hosts]
+host01 ansible_host={{ terraform.outputs.ceph_host.value[0] }}
+host02 ansible_host={{ terraform.outputs.ceph_host.value[1] }}
+host03 ansible_host={{ terraform.outputs.ceph_host.value[2] }}
+
+[ceph:children]
+admin-host
+ceph-hosts
+
+[ceph:vars]
+ansible_user=cloud-user
