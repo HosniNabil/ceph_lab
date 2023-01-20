@@ -1,25 +1,16 @@
 echo "-------------------------"
 echo "openstack auth credentials"
-echo "type openstack auth url"
-read rhosp_auth_url
-echo "type openstack username"
-read  rhosp_username
-echo "type openstack password"
-read -s rhosp_password
-echo "type openstack tenant name"
-read  rhosp_tenant
-echo "type openstack domain name"
-read  rhosp_domain
+read -p "type openstack auth url" rhosp_auth_url
+read -p "type openstack username" rhosp_username
+read -s -p "type openstack password" rhosp_password
+read -p "type openstack tenant name" rhosp_tenant
+read -p "type openstack domain name" rhosp_domain
 echo "-------------------------"
 echo "ceph nodes configuration"
-echo "type openstack public network name"
-read  rhosp_public_net
-echo "type ceph nodes OS images"
-read  rhosp_image
-echo "type ceph admin flavor"
-read  rhosp_admin_flavor
-echo "type ceph nodes flavor"
-read  rhosp_ceph_flavor
+read -p "type openstack public network name" rhosp_public_net
+read -p "type ceph nodes OS images" rhosp_image
+read -p "type ceph admin flavor" rhosp_admin_flavor
+read -p "type ceph nodes flavor" rhosp_ceph_flavor
 echo "-------------------------"
 echo "generating var files"
 if  [ ! -d ./vars ];
