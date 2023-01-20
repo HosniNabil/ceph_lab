@@ -20,7 +20,7 @@
           vms_image: "{{ vms_image }}" 
           adminhost_flavor: "{{ adminhost_flavor }}"
           ceph_flavor: "{{ ceph_flavor }}"
-      register: terraform
+      register:  terraform_output 
     - name: create ceph inventory file
       template:
         src: "templates/inventory.j2"
