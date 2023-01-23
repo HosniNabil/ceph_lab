@@ -1,0 +1,83 @@
+---
+- name: Configure CEPH nodes prerequisites
+  hosts: all
+  become: true
+  vars_files:
+    - secrets/rhsm.yml
+  tasks:
+    - name: register all nodes
+      community.general.redhat_subscription:
+        username: "{{ rhsm_username }}"
+        password: "{{ rhsm_password }}"
+        pool_ids: "{{ rhsm_pool_id }}"
+    - name: configure base repos
+      block:
+        - community.general.rhsm_repository:
+            name: '*'
+            state: disabled
+        - community.general.rhsm_repository:
+            name: "{{ item }}"
+          loop:
+            - "rhel-8-for-x86_64-baseos-rpms"
+            - "rhel-8-for-x86_64-appstream-rpms"
+    - name: update the system
+      package:
+        name: '*'
+        state: latest
+    - name: reboot
+      ansible.builtin.reboot:
+        msg: "rebooted via ansible"
+    - name: configure ceph repos
+      community.general.rhsm_repository:
+        name: "rhceph-5-tools-for-rhel-8-x86_64-rpms"
+    - name: create ceph admin user
+      ansible.builtin.user:
+        name: "ceph-admin"
+    - name: configure passwordless sudo 
+      copy:
+        src: "files/ceph-admin"
+        dest: "/etc/sudoers.d/ceph-admin"
+
+- name: Configure admin node
+  hosts: admin
+  become: true
+  # vars_files:
+  #   - secrets/rhsm.yml
+  tasks:
+    - name: configure ceph repos
+      community.general.rhsm_repository:
+        name: "ansible-2.9-for-rhel-8-x86_64-rpms"
+    - name: install packages
+      yum:
+        name: cephadm-ansible
+        state: present
+    - name: copy inventory file
+      copy:
+        src: "./inventory"
+        dest: "/usr/share/cephadm-ansible/hosts"
+    - name: create .ssh directory
+      file:
+        state: directory
+        path: "/home/ceph-admin/.ssh"
+        owner: "ceph-admin"
+    - name: generate ssh keypair
+      community.crypto.openssh_keypair:
+        owner: "ceph-admin"
+        path: "/home/ceph-admin/.ssh/id_rsa.pub"
+    - name: retrieve ssh public key
+      fetch:
+        src: "/home/ceph-admin/.ssh/id_rsa.pub"
+        dest: "./id_rsa.pub"
+- name: Configure passwordless ssh access in ceph hosts
+  hosts: ungrouped
+  become: true
+  tasks:
+    - name: set ssh public key fact
+      set_fact:
+        ssh_pub: "{{ lookup('file', './id_rsa.pub/host00/home/ceph-admin/.ssh/id_rsa.pub') }}"
+    - name: copy ssh key
+      lineinfile:
+        create: true
+        path: "/home/ceph-admin/.ssh/authorized_keys"
+        line: "{{ ssh_pub }}"
+    

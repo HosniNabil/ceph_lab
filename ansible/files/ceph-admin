@@ -1,0 +1,1 @@
+ceph-admin ALL = (root) NOPASSWD:ALL
